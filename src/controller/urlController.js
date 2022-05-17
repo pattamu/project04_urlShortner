@@ -41,10 +41,8 @@ const createUrl = async (req, res) => {
         let checkShortId = await urlModel.find()
         let id = checkid(checkShortId)
 
-        if(id){
-            data.urlCode = id
-            data.shortUrl = "http://localhost:3000/" + id
-        }
+        data.urlCode = id
+        data.shortUrl = "http://localhost:3000/" + id
 
         let createUrl = await urlModel.create(data)
         res.status(201).send({status: true, message: 'Data successfully created.', data: {
