@@ -1,4 +1,3 @@
-// const validUrl = require('valid-url')
 const shortid = require('shortid')
 const urlModel = require('../model/urlModel')
 
@@ -32,7 +31,7 @@ const createUrl = async (req, res) => {
 
         let findUrl = await urlModel.findOne({longUrl: data.longUrl})
         if(findUrl)
-            return res.status(200).send({status: false, message: "Url already present. Here you go ->", 
+            return res.status(200).send({status: false, message: "Url already present. Here's the short URL ->", 
             data: {
                 longUrl: findUrl.longUrl, 
                 shortUrl: findUrl.shortUrl, 
@@ -72,18 +71,5 @@ const getUrl = async (req, res) => {
     }
 }
 
-
-const generateRandomId = () => {
-
-    // let id = await ("0000" + ((Math.random() * Math.pow(36, 4)) | 0).toString(36)).slice(-4);
-    // res.send({id})
-
-    var firstPart = (Math.random() * 46656) | 0;
-    var secondPart = (Math.random() * 46656) | 0;
-    firstPart = ("000" + firstPart.toString(36)).slice(-3);
-    secondPart = ("000" + secondPart.toString(36)).slice(-3);
-    res.send({id: firstPart + secondPart})
-
-}
 
 module.exports = {createUrl, getUrl}
