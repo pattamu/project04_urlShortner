@@ -52,23 +52,16 @@ const createUrl = async (req, res) => {
         if(!validateURL(data.longUrl))
             return res.status(400).send({status: false, message: "Enter a Valid URL."})
 
-        /*******************************************************************************/
-        let cachedlinkdata = await GET_ASYNC(`${data.longUrl}`)
-        if(cachedlinkdata){
-            let change = JSON.parse(cachedlinkdata)
-            return res.status(200).send({status:true,message:"Data from Redis ->", redisdata:change})
-        }
-        /*******************************************************************************/
+        /****************************************Search in Redis First******************************/
+        let cachedlinkdata = await GET_ASYNC(`${data.longUrl}`) //we can write the same as GET_ASYNC(data.longUrl) --> No Difference
+        if(cachedlinkdata)
+            return res.status(200).send({status:true,message:"Data from Redis ->", redisdata:JSON.parse(cachedlinkdata)})
+        /******************************************************************************************/
 
-        let findUrl = await urlModel.findOne({longUrl: data.longUrl})
+        let findUrl = await urlModel.findOne({longUrl: data.longUrl},{_id:0, createdAt:0, updatedAt: 0, __v:0})
         if(findUrl){
             await SET_ASYNC(`${data.longUrl}`,JSON.stringify(findUrl));
-            return res.status(200).send({status: true, message: "Data from DB ->", 
-            data: {
-                longUrl: findUrl.longUrl, 
-                shortUrl: findUrl.shortUrl, 
-                urlCode: findUrl.urlCode
-            }})
+            return res.status(200).send({status: true, message: "Data from DB ->", data: findUrl})
         }
 
         let checkShortId = await urlModel.find()
@@ -78,12 +71,14 @@ const createUrl = async (req, res) => {
         data.shortUrl = `http://localhost:3000/${id}`
 
         let createUrl = await urlModel.create(data)
-        await SET_ASYNC(`${data.longUrl}`,JSON.stringify(createUrl));
-        res.status(201).send({status: true, message: 'Data successfully created.', data: {
+        let str = JSON.stringify({longUrl:createUrl.longUrl, shortUrl:createUrl.shortUrl, urlCode:createUrl.urlCode})
+        await SET_ASYNC(`${data.longUrl}`, str);
+        res.status(201).send({status: true, message: 'Data successfully created.', 
+        data: {
             longUrl: createUrl.longUrl,
             shortUrl: createUrl.shortUrl,
             urlCode: createUrl.urlCode
-        } })
+        }})
 
     }catch(err){
         res.status(500).send({status: false, message: err.message})
@@ -93,21 +88,30 @@ const createUrl = async (req, res) => {
 const getUrl = async (req, res) => {
     try{
         let cahcedUrlData = await GET_ASYNC(`${req.params.urlCode}`)
-        if(cahcedUrlData){
-            let changetype = JSON.parse(cahcedUrlData)
-            res.status(302).redirect(changetype.longUrl)
-        }
+        if(cahcedUrlData)
+            // res.status(200).send({status: true, message: "Data from REDIS ->", data: JSON.parse(cahcedUrlData)})
+            res.redirect(JSON.parse(cahcedUrlData))
         else{
             let findUrl = await urlModel.findOne({urlCode: req.params.urlCode})
             if(!findUrl)
                 return res.status(404).send({status: false, message: 'URL not found.'})
-            await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl))
-            res.status(302).redirect(findUrl.longUrl)
+            await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl.longUrl))
+            // res.status(200).send({status: true, message: "Data from DB ->", data: findUrl.longUrl})
+            res.redirect(findUrl.longUrl)
         }
     }catch(err){
         res.status(500).send({status: false, message: err.message})
     }
 }
 
+const flushRedisCache = (req, res) => {
+    redisClient.flushall('ASYNC', (err, data) => {
+        if(err)
+        console.log(err)
+        else if(data) 
+        console.log("Memory flushed: ",data)
+    })
+    res.status(200).send({msg: "Redis memory cleared"})
+}
 
-module.exports = {createUrl, getUrl}
+module.exports = {createUrl, getUrl, flushRedisCache}
