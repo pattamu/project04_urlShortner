@@ -107,9 +107,9 @@ const getUrl = async (req, res) => {
 const flushRedisCache = (req, res) => {
     redisClient.flushall('ASYNC', (err, data) => {
         if(err)
-        console.log(err)
+            console.log(err)
         else if(data) 
-        console.log("Memory flushed: ",data)
+            console.log("Memory flushed: ",data)
     })
     res.status(200).send({msg: "Redis memory cleared"})
 }

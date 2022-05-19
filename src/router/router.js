@@ -8,6 +8,6 @@ router.post('/url/shorten', createUrl)
 router.get('/:urlCode', getUrl)
 
 //Flush Redis cache
-router.delete('/delete/cache', flushRedisCache)
+router.delete('/redis/clearcache', flushRedisCache)
 
 module.exports = router
