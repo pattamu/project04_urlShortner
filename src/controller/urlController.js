@@ -30,7 +30,7 @@ const isValid = value => {
 
 const validateURL = url => {
     var urlPattern = /^(http(s)?:\/\/)?(www.)?([a-zA-Z0-9])+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\/[^\s]*)?$/gm
-    return urlPattern.test(url.trim());
+    return urlPattern.test(url.toString().trim());
 }
 
 const checkid = val => {
