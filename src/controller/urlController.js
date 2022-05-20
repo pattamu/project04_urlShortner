@@ -55,7 +55,7 @@ const createUrl = async (req, res) => {
         /****************************************Search in Redis First******************************/
         let cachedlinkdata = await GET_ASYNC(`${data.longUrl}`) //we can write the same as GET_ASYNC(data.longUrl) --> No Difference
         if(cachedlinkdata)
-            return res.status(200).send({status:true,message:"Data from Redis ->", redisdata:JSON.parse(cachedlinkdata)})
+            return res.status(200).send({status:true,message:"Data from Redis ->", data:JSON.parse(cachedlinkdata)})
         /******************************************************************************************/
 
         let findUrl = await urlModel.findOne({longUrl: data.longUrl},{_id:0, createdAt:0, updatedAt: 0, __v:0})
@@ -89,7 +89,7 @@ const getUrl = async (req, res) => {
     try{
         let cahcedUrlData = await GET_ASYNC(`${req.params.urlCode}`)
         if(cahcedUrlData)
-            // res.status(200).send({status: true, message: "Data from REDIS ->", data: JSON.parse(cahcedUrlData)})
+            // res.status(200).send({status: true, message: "Data from REDIS ->", longUrl: JSON.parse(cahcedUrlData)})
             res.redirect(JSON.parse(cahcedUrlData))
         else{
             let findUrl = await urlModel.findOne({urlCode: req.params.urlCode})
